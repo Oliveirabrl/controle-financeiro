@@ -593,17 +593,17 @@ const CONFIG = {
     pt: { lanc: (n, p) => 'Preço de lançamento para os primeiros ' + n + ' clientes. Depois, ' + p + '.', semPix: 'O código Pix ainda não foi publicado.',
       sel: 'Código selecionado. Copie com Ctrl+C ou segure o dedo.', copiado: 'Código Pix copiado. Cole no app do seu banco.', usePix: 'Use o Pix copia e cola ao lado.',
       paguei: (p) => 'Olá! Paguei o Controle Financeiro Pessoal pelo Pix (' + p + '). Segue o comprovante.\nNome para a licença: ',
-      duvida: 'Olá! Tenho uma dúvida sobre o Controle Financeiro Pessoal: ', semZap: 'O WhatsApp ainda não foi publicado.', comprar: '' },
+      duvida: 'Olá! Tenho uma dúvida sobre o Controle Financeiro Pessoal: ', semZap: 'O WhatsApp ainda não foi publicado.', comprar: '', ind: 'Indicação: ' },
     es: { lanc: (n, p) => 'Precio de lanzamiento para los primeros ' + n + ' clientes. Después, ' + p + '.', semPix: 'El código Pix todavía no fue publicado.',
       sel: 'Código seleccionado. Cópielo con Ctrl+C o manteniendo el dedo.', copiado: 'Código Pix copiado. Péguelo en la app de su banco.', usePix: 'Use el Pix copia y pega de al lado.',
       paguei: (p) => '¡Hola! Pagué el Control Financiero Personal por Pix (' + p + '). Le envío el comprobante.\nNombre para la licencia: ',
       duvida: '¡Hola! Tengo una consulta sobre el Control Financiero Personal: ', semZap: 'El WhatsApp todavía no fue publicado.',
-      comprar: '¡Hola! Quiero comprar el Control Financiero Personal. ¿Cómo hago el pago?\nNombre para la licencia: ' },
+      comprar: '¡Hola! Quiero comprar el Control Financiero Personal. ¿Cómo hago el pago?\nNombre para la licencia: ', ind: 'Indicación: ' },
     en: { lanc: (n, p) => 'Launch price for the first ' + n + ' customers. After that, ' + p + '.', semPix: 'The Pix code has not been published yet.',
       sel: 'Code selected. Copy it with Ctrl+C or press and hold.', copiado: 'Pix code copied. Paste it in your bank app.', usePix: 'Use the Pix copy-and-paste code beside it.',
       paguei: (p) => 'Hi! I paid for Personal Finance Manager by Pix (' + p + '). Here is the receipt.\nName for the license: ',
       duvida: 'Hi! I have a question about Personal Finance Manager: ', semZap: 'WhatsApp has not been published yet.',
-      comprar: 'Hi! I want to buy Personal Finance Manager. How do I pay?\nName for the license: ' }
+      comprar: 'Hi! I want to buy Personal Finance Manager. How do I pay?\nName for the license: ', ind: 'Referral: ' }
   }[L] || {};
 
   // ---- preço ----
@@ -648,14 +648,25 @@ const CONFIG = {
     } else sel();
   });
 
+  // ---- Indicação: ?ind=CÓDIGO (nº do pedido de quem indicou). Fica guardado no navegador sem prazo,
+  // até a pessoa abrir o link de indicação de outro cliente. Só letras, números e hífen (até 20).
+  const indOk = (v) => typeof v === 'string' && /^[A-Za-z0-9-]{1,20}$/.test(v);
+  let ind = '';
+  try { const q = new URLSearchParams(location.search).get('ind'); if (indOk(q)) ind = q; } catch (e) { /* ignora */ }
+  try { if (ind) localStorage.setItem('osc.ind', ind); else { const g = localStorage.getItem('osc.ind'); if (indOk(g)) ind = g; } } catch (e) { /* sem armazenamento: vale nesta visita */ }
+  // a linha da indicação entra antes da última linha ("Nome para a licença: ")
+  const comInd = (m) => { if (!ind) return m; const i = m.lastIndexOf('\n'); return i < 0 ? m + '\n' + TX.ind + ind : m.slice(0, i) + '\n' + TX.ind + ind + m.slice(i); };
+  const cartao = $('#pagar-cartao');
+  if (cartao && ind) cartao.href += (cartao.href.indexOf('?') < 0 ? '?' : '&') + 'client_reference_id=' + encodeURIComponent(ind);
+
   // ---- WhatsApp ----
   const zap = so(CONFIG.whatsapp).replace(/\D/g, '');
   const zapFull = zap ? (zap.startsWith('55') && zap.length > 11 ? zap : '55' + zap) : '';
   function linkZap(msg) { return 'https://wa.me/' + zapFull + '?text=' + encodeURIComponent(msg); }
   if (zapFull) {
-    $('#ja-paguei').href = linkZap(TX.paguei(precoTxt));
+    $('#ja-paguei').href = linkZap(comInd(TX.paguei(precoTxt)));
     $('#duvida').href = linkZap(TX.duvida);
-    if ($('#comprar-zap')) $('#comprar-zap').href = linkZap(TX.comprar);
+    if ($('#comprar-zap')) $('#comprar-zap').href = linkZap(comInd(TX.comprar));
     const d = zapFull.slice(2);
     const local = d.length === 11 ? '(' + d.slice(0, 2) + ') ' + d.slice(2, 7) + '-' + d.slice(7) : d;
     $('#zap-num').textContent = L === 'pt' ? local : '+55 ' + local;
