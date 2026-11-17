@@ -89,6 +89,7 @@ p { margin: 0; }
 .preco span { color: var(--soft); font-size: 14.5px; }
 .lanc { display: inline-block; margin-top: 12px; font-size: 14px; font-weight: 500; color: var(--gold-ink); background: var(--gold-soft); padding: 7px 12px; border-radius: 6px; }
 .compra-info .lanc { margin-top: -4px; align-self: flex-start; }
+.lanc[hidden] { display: none; }
 .acoes { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 20px; }
 .garantias { display: flex; flex-wrap: wrap; gap: 6px 18px; margin: 22px 0 0; padding: 0; list-style: none; font-size: 13.5px; color: var(--soft); }
 .garantias li::before { content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--gold); margin-right: 8px; vertical-align: 2px; }
@@ -545,8 +546,8 @@ html { scroll-behavior: smooth; }
    mercadoLivre: link do anúncio, quando existir (senão deixe "")
 ========================================================================== */
 const CONFIG = {
-  preco: "97,00",
-  precoDepois: "157,00",      // preço depois do lançamento ("" para não mostrar)
+  preco: "157,00",           // lançamento (R$ 97 para os primeiros 50 clientes) encerrado em 17/11/2026
+  precoDepois: "",            // preço depois do lançamento ("" para não mostrar)
   vagasLancamento: 50,
   chavePix: "59437693000127",
   nomeRecebedor: "OS CAPITAL LTDA",
